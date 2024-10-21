@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Airline Booking Form</title>
+  <link rel="stylesheet" href="css/style2.css">
+  <!-- Latest compiled and minified CSS -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+
+  <!-- jQuery library -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+  <!-- Popper JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+
+  <!-- Latest compiled JavaScript -->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+  <link rel="icon" href="images/logoP.png" type="image/png">
+
+</head>
+<body>
+<div class="container"><!--container-->
+
+  <form class="form-group" id="bookingForm"><!--form-->
+
+    <div class="booking-form"><!--form-->
+      <h1 class="text-center">FlightHub Booking Form</h1>
+      <h2 class="text-white">Personal Details</h2>
+
+      <div class="input-field"><!--input-->
+        <input type="text" id="passengerName" class="input" placeholder="Full Name" required>
+        <input type="text" id="passengerContactNo" class="input" placeholder="Phone Number" required>
+        <input type="email" id="passengerEmail" class="input" placeholder="Email" required>
+        <input type="text" id="passengerPassportNo" class="input"placeholder="Passport Number" required>
+      </div><!--input-->
+      <button type="submit" class="hero-btn red-btn">Submit Form</button>
+
+      <div class="popup" id="popupSuccess">
+        <img src="images/tick.PNG">
+        <h3>Thank You!</h3>
+        <p>Your booking is successfully.</p>
+        <button type="button" class="herob-btn blue-btn" onclick="closePopup()">OK</button>
+      </div>
+
+      <div class="popup" id="popupWaiting">
+        <img src="images/cancel.png">
+        <h3>Sorry!</h3>
+        <p>Booked full. You have been added to waiting list.</p>
+        <button type="button" class="herob-btn blue-btn" onclick="closePopup()">OK</button>
+      </div>
+
+
+    </div><!--form-->
+
+  </form><!--form-->
+
+</div><!--container-->
+<script>
+  document.getElementById('bookingForm').addEventListener('submit', function (event) {
+      event.preventDefault();
+
+      var passengerName = document.getElementById('passengerName').value;
+      var passengerEmail = document.getElementById('passengerEmail').value;
+      var passengerContactNo = document.getElementById('passengerContactNo').value;
+      var passengerPassportNo = document.getElementById('passengerPassportNo').value;
+
+      var bookingData = {
+        passengerName: passengerName,
+        passengerEmail: passengerEmail,
+        passengerContactNo: passengerContactNo,
+        passengerPassportNo: passengerPassportNo
+      };
+
+      // Get the current URL
+      var currentUrl = window.location.href;
+
+      // Create a URLSearchParams object with the URL
+      var urlParams = new URLSearchParams(currentUrl);
+      var match = currentUrl.match(/[?&]flightId=([^&]*)/);
+      var flightId = match ? decodeURIComponent(match[1]) : null;
+      console.log('Flight ID:', flightId);
+
+
+      // Log the value to the console (you can do whatever you need with it)
+      console.log('Current URL:', currentUrl);
+      console.log('Flight ID:', flightId);
+
+
+      var url = '/book/' + encodeURIComponent(flightId);
+
+fetch(url, {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(bookingData)
+})
+.then(response => {
+    if (!response.ok) {
+        // Read the response as text
+        return response.text().then(text => {
+            // Display the error message
+            alert('Error: ' + text);
+    window.location.href = "/login";
+            // Return an empty object to avoid further errors
+            return {};
+
+        });
+    }
+    // Parse the JSON only if the response is successful
+    return response.json();
+})
+.then(data => {
+    // Check if data is defined and has the expected structure
+    if (data && data.status) {
+        if (data.status === 'CONFIRMED') {
+            // Handle confirmed booking
+            showPopup('popupSuccess');
+        } else if (data.status === 'WAITING') {
+            // Handle waiting booking
+            showPopup('popupWaiting');
+        } else {
+            // Handle other cases, e.g., display an error message
+            alert('Unexpected status: ' + data.status);
+
+        }
+    }
+})
+.catch(error => {
+    // Handle fetch error (e.g., network issues)
+    alert('Fetch error: ' + error.message);
+});
+
+  });
+</script>
+<script>
+
+function showPopup(popupId) {
+    var popup = document.getElementById(popupId);
+    if (popup) {
+        popup.classList.add("open-popup");
+        // Store a flag in localStorage to indicate that the popup should be open
+        localStorage.setItem("popupOpen", "true");
+    }
+  }
+
+  // Function to close the popup
+  function closePopup() {
+    var popups = document.querySelectorAll('.popup');
+    popups.forEach(function (popup) {
+      popup.classList.remove("open-popup");
+    });
+    // Remove the flag from localStorage when closing the popup
+    localStorage.removeItem("popupOpen");
+    // Redirect to the homepage
+    window.location.href = "/booking";
+  }
+
+  // Check if the flag is present in localStorage when the page loads
+  document.addEventListener("DOMContentLoaded", function () {
+    if (localStorage.getItem("popupOpen") === "true") {
+      // Adjust the popup ID based on your logic
+      showPopup('popupSuccess');
+    }
+  });
+    </script>
+
+</body>
+</html>

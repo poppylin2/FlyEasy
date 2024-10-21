@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+    <html lang="en" xmlns:th="http://www.thymeleaf.org">
+        <head>
+            <meta charset="UTF-8">
+            <meta http-equiv="X-UA-Compatible" content="IE=edge">
+            <meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+            <!--Swiper CSS-->
+            <link rel="stylesheet" href="/css/swiper-bundle.min.css">
+           <!--CSS-->
+            <link rel="stylesheet" href="/css/scroll.css">
+            <link rel="icon" href="images/logoP.png" type="image/png">
+        </head>
+
+        <style>
+            body {
+                font-family: 'Arial', sans-serif;
+                height: 100vh;
+                width: 100%;
+                min-height: 100vh;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                padding: 0;
+                background-color: #f4f4f4;
+                background-image: linear-gradient(rgba(4,9,30,0.7),rgba(4,9,30,0.7)),url(/images/airport02.jpg);
+                background-position: center;
+                background-size: cover;
+            }
+
+        </style>
+        <body>
+            <section class="booking-header" >
+                <div class="swiper-container swiper" id="booking-container">
+                    <div class="swiper-content swiper-wrapper">
+                        <!-- Cards will be dynamically added here -->
+                    </div>
+                    <div class="swiper-button-next"></div>
+                    <div class="swiper-button-prev"></div>
+                </div>
+                
+                <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        var searchParams = new URLSearchParams(window.location.search);
+                        var date = searchParams.get('date');
+                        var source = searchParams.get('source');
+                        var destination = searchParams.get('destination');
+                
+                        // Replace + with space
+                        source = source.replace(/\+/g, ' ');
+                        destination = destination.replace(/\+/g, ' ');
+                
+                        var url = '/searchAllDates?date=' +encodeURIComponent(date)+
+                            '&source=' + encodeURIComponent(source) +
+                            '&destination=' + encodeURIComponent(destination);
+                        fetch(url)
+                            .then(response => response.json())
+                            .then(data => {
+                                var flights = data.flights;
+                                console.log("Response from server:", flights);
+                                if (flights && flights.length > 0) {
+                                    var swiper = new Swiper('.swiper', {
+                                    slidesPerView: 7,
+                                    slidesPerGroup: 7,
+                                    spaceBetween: 20,
+                                    virtual: {
+                                        slides: flights.map(createCardItem),
+                                        addSlidesBefore: 3,
+                                        addSlidesAfter: 3,
+                                    },
+                                    navigation: {
+                                        nextEl: '.swiper-button-next',
+                                        prevEl: '.swiper-button-prev',
+                                    },
+
+                                });
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Fetch error:', error);
+                            });
+                    });
+                
+                    // Function to create HTML for each card based on flight data
+                    function createCardItem(flight) {
+                        var cardItem = `
+                            <div class="swiper-card" onclick="handleCardClick('${flight.date}')">
+                                <div class="card-content">
+                                    <div class="date">${flight.date}</div>
+                                    <div class="price"> RM ${flight.price}</div>
+                                </div>
+                            </div>
+                        `;
+                        return cardItem;
+                    }
+                
+                    // Function to display a group of flights in the swiper container
+                    function displayFlightGroup(flightsGroup) {
+                        var flightContainer = document.querySelector('.swiper-content');
+                        flightContainer.innerHTML = ''; // Clear previous content
+                
+                        flightsGroup.forEach(function (flight) {
+                            flightContainer.innerHTML += createCardItem(flight);
+                        });
+                    }
+                </script>
+                
+            
+            
+
+                <div class="search-results" id="searchResultsContainer">
+
+                <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        // Parse the URL parameters
+                        var searchParams = new URLSearchParams(window.location.search);
+                        var date = searchParams.get('date');
+                        var source = searchParams.get('source');
+                        var destination = searchParams.get('destination');
+                
+                        // Replace + with space
+                        source = source.replace(/\+/g, ' ');
+                        destination = destination.replace(/\+/g, ' ');
+                
+                        // ... (use date, source, and destination as needed)
+                
+                        // Rest of your code to fetch and display data
+                        var url = '/search?date=' + encodeURIComponent(date) +
+                            '&source=' + encodeURIComponent(source) +
+                            '&destination=' + encodeURIComponent(destination);
+                
+                        fetch(url)
+    .then(response => response.json())
+    .then(data => {
+        var flights = data.flights;
+        console.log("Flights:", flights);
+        if (flights && flights.length > 0) {
+            console.log("Hiiii");
+            var searchResultsContainer = document.getElementById('searchResultsContainer');
+            if (searchResultsContainer) {
+                flights.forEach(function (flight) {
+                    searchResultsContainer.innerHTML += createFlightItem(flight);
+                    console.log(flight);
+                });
+            } else {
+                console.log("searchResultsContainer not found");
+            }
+        } else {
+            console.log("No flights found");
+        }
+        console.log("fudge");
+    })
+    .catch(error => {
+        console.log("Error:", error);
+    });
+                    });
+                    
+
+                </script>
+                
+            </div>
+
+            </section>
+        
+        </body>
+        <script>
+            function handleCardClick(flightDate) {
+                // get source and destination from current url
+                var searchParams = new URLSearchParams(window.location.search);
+               
+                var source = searchParams.get('source');
+                var destination = searchParams.get('destination');
+        
+                // Replace + with space
+                source = source.replace(/\+/g, ' ');
+                destination = destination.replace(/\+/g, ' ');
+        
+                // ... (use date, source, and destination as needed)
+        
+                
+                var url = '/search?date=' + flightDate +
+                    '&source=' + encodeURIComponent(source) +
+                    '&destination=' + encodeURIComponent(destination);
+
+                console.log(url);
+
+                // Clear existing flight items
+                var searchResultsContainer = document.getElementById('searchResultsContainer');
+                searchResultsContainer.innerHTML = '';
+
+
+                fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                            var flights = data.flights;
+                            console.log("Flights:",flights);
+                            if (flights && flights.length > 0) {
+                                var searchResultsContainer = document.getElementById('searchResultsContainer');
+                                flights.forEach(function (flight) {
+                                    searchResultsContainer.innerHTML += createFlightItem(flight);
+                                });
+                            }
+                        })
+                .catch(error => {
+                    console.error('Fetch error:', error);
+                });
+
+
+            }
+        
+            function createFlightItem(flight) {
+                        let imageSrc;
+                        if (flight.company === 'AirAsia') {
+                            imageSrc = 'images/flight04.jpg';
+                        }
+                        else if (flight.company === 'Malaysia Airlines'){
+                            imageSrc = 'images/Malaysia-airline.png';
+                        }
+                        else if(flight.company === 'Batik Air'){
+                            imageSrc = 'images/Batik-Air.png';
+                        }
+                        
+                        var flightItem = "<div class='flight-item'>" +
+                            "<img src='"+imageSrc+"' alt='Flight Image'>"+
+                            "<div class='flight-details'>" +
+                            "<h2>Flight from "+flight.source+" to "+flight.destination+"</h2>" +
+                            "<h2>" +flight.flightName+"</h2>" +
+                            "<p>Date: " + flight.date + "</p>" +
+                            "<p>Departure: " + flight.departure + "</p>" +
+                            "<p>Arrival: " + flight.arrival + "</p>" +
+                            "<p class='available-seats'>Available Seats: " + flight.availableSeats + "</p>" +
+                            "</div>" +
+                            "<div class='flight-price'>RM" + flight.price + "</div>" +
+                            "<a href='/booking-form?flightId=" +flight.id+"' class='herob-btn blue-btn'>Book Now</button></a>" +
+                            "</div>";
+                        return flightItem;
+                    }
+
+        </script>
+        <script src="js/swiper-bundle.min.js"></script>
+        <script src="js/script.js"></script>
+        
+    </html>
